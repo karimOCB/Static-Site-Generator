@@ -1,7 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType
-from utils import text_node_to_html_node
+from utils import text_node_to_html_node, split_nodes_delimiter
 
 
 class TestTextNode(unittest.TestCase):
@@ -54,7 +54,33 @@ class TestTextNode(unittest.TestCase):
     def test_invalid_type_raises(self):
         node = TextNode("x", None)
         self.assertRaises(Exception, text_node_to_html_node, node)
+
+    def test_delimiter_one_node(self):
+        node = TextNode("Hello **world**.", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
+        self.assertEqual(new_nodes, [TextNode("Hello ", TextType.TEXT), TextNode("world", TextType.BOLD), TextNode(".", TextType.TEXT)])
+    
+    def test_delimiter_more_nodes(self):
+        node = TextNode("Hello **world**.", TextType.TEXT)
+        node2 = TextNode("Good **bye**.", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node, node2], "**", TextType.BOLD)
+        self.assertEqual(new_nodes, [TextNode("Hello ", TextType.TEXT), TextNode("world", TextType.BOLD), TextNode(".", TextType.TEXT), TextNode("Good ", TextType.TEXT), TextNode("bye", TextType.BOLD), TextNode(".", TextType.TEXT)])
+
+    def test_delimiter_more_nodes_no_txt(self):
+        node = TextNode("Hello **world**.", TextType.TEXT)
+        node2 = TextNode("www.url.com", TextType.LINK)
+        new_nodes = split_nodes_delimiter([node, node2], "**", TextType.BOLD)
+        self.assertEqual(new_nodes, [TextNode("Hello ", TextType.TEXT), TextNode("world", TextType.BOLD), TextNode(".", TextType.TEXT), TextNode("www.url.com", TextType.LINK)])
             
+    def test_delimiter_invalid_syntax(self):
+        node = TextNode("Hello **world.", TextType.TEXT)     
+        self.assertRaises(Exception, split_nodes_delimiter, [node], "**", TextType.BOLD)
+
+    def test_delimiter_good_and_invalid_syntax(self):
+        node = TextNode("Hello **world**.", TextType.TEXT)     
+        node2 = TextNode("Good **bye.", TextType.TEXT)     
+        self.assertRaises(Exception, split_nodes_delimiter, [node, node2], "**", TextType.BOLD)
+
 
 if __name__ == "__main__":
     unittest.main()
