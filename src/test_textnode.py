@@ -1,6 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType
+from utils import text_node_to_html_node
 
 
 class TestTextNode(unittest.TestCase):
@@ -33,6 +34,27 @@ class TestTextNode(unittest.TestCase):
         node = TextNode("This is a text node", TextType.BOLD, None)
         node2 = TextNode("This is a text node", TextType.BOLD, None)
         self.assertEqual(node, node2)
+
+    def test_text(self):
+        node = TextNode("This is a text node", TextType.TEXT)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, None)
+        self.assertEqual(html_node.value, "This is a text node")
+    
+    def test_url(self):
+        node = TextNode("", TextType.LINK, "www.differenturl")
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(repr(html_node), "LeafNode(a, , {'href': 'www.differenturl'})")
+
+    def test_img(self):
+        node = TextNode("Alt Text", TextType.IMAGE, "www.imgurl")
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(repr(html_node), "LeafNode(img, , {'src': 'www.imgurl', 'alt': 'Alt Text'})")
+
+    def test_invalid_type_raises(self):
+        node = TextNode("x", None)
+        self.assertRaises(Exception, text_node_to_html_node, node)
+            
 
 if __name__ == "__main__":
     unittest.main()
