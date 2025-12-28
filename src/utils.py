@@ -64,6 +64,28 @@ def split_nodes_link(old_nodes):
                 new_nodes.append(TextNode(text_to_process, TextType.TEXT))
     return new_nodes
 
+def split_nodes_image(old_nodes):
+    new_nodes = []
+    for old_node in old_nodes:
+        images_tuples = extract_markdown_images(old_node.text);
+        if not images_tuples:
+            new_nodes.append(old_node)
+        else:
+            text_to_process = old_node.text
+            for image_tuple in images_tuples:
+                alt_text, image_url = image_tuple
+                f_md_image = f"![{alt_text}]({image_url})"
+                sections = text_to_process.split(f_md_image, 1)
+                before = sections[0]
+                after = sections[1] if len(sections) > 1 else ""
+                if before != "":
+                    new_nodes.append(TextNode(before, TextType.TEXT))
+                new_nodes.append(TextNode(alt_text, TextType.IMAGE, image_url))
+                text_to_process = after
+            if text_to_process != "":
+                new_nodes.append(TextNode(text_to_process, TextType.TEXT))
+    return new_nodes
+
 
 def extract_markdown_images(text):
     return re.findall(r"\[(.*?)\]\((.*?)\)", text)

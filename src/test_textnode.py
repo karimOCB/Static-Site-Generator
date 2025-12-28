@@ -1,7 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType
-from utils import text_node_to_html_node, split_nodes_delimiter, split_nodes_link
+from utils import text_node_to_html_node, split_nodes_delimiter, split_nodes_link, split_nodes_image
 
 
 class TestTextNode(unittest.TestCase):
@@ -85,6 +85,17 @@ class TestTextNode(unittest.TestCase):
         node = TextNode("This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)", TextType.TEXT)     
         new_nodes = split_nodes_link([node])
         self.assertListEqual(new_nodes, [TextNode("This is text with a link ", TextType.TEXT),TextNode("to boot dev", TextType.LINK, "https://www.boot.dev"),TextNode(" and ", TextType.TEXT),TextNode("to youtube", TextType.LINK, "https://www.youtube.com/@bootdotdev"),])
+  
+    def test_links_delimiter(self):
+            node = TextNode("This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)", TextType.TEXT)     
+            node2 = TextNode("This is text with a link [to youtube](https://www.youtube.com)", TextType.TEXT)     
+            new_nodes = split_nodes_link([node, node2])
+            self.assertListEqual(new_nodes, [TextNode("This is text with a link ", TextType.TEXT),TextNode("to boot dev", TextType.LINK, "https://www.boot.dev"),TextNode(" and ", TextType.TEXT),TextNode("to youtube", TextType.LINK, "https://www.youtube.com/@bootdotdev"), TextNode("This is text with a link ", TextType.TEXT),TextNode("to youtube", TextType.LINK, "https://www.youtube.com"),])
+
+    def test_img_delimiter(self):
+        node = TextNode("This is some text with an ![first image](https://example.com/first.png) and another ![second image](https://example.com/second.png) in it.", TextType.TEXT)     
+        new_nodes = split_nodes_image([node])
+        self.assertListEqual(new_nodes, [TextNode("This is some text with an ", TextType.TEXT),TextNode("first image", TextType.IMAGE, "https://example.com/first.png"),TextNode(" and another ", TextType.TEXT),TextNode("second image", TextType.IMAGE, "https://example.com/second.png"),TextNode(" in it.", TextType.TEXT),])
 
 
 if __name__ == "__main__":
