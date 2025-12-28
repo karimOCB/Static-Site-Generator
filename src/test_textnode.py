@@ -1,7 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType
-from utils import text_node_to_html_node, split_nodes_delimiter
+from utils import text_node_to_html_node, split_nodes_delimiter, split_nodes_link
 
 
 class TestTextNode(unittest.TestCase):
@@ -81,6 +81,12 @@ class TestTextNode(unittest.TestCase):
         node2 = TextNode("Good **bye.", TextType.TEXT)     
         self.assertRaises(Exception, split_nodes_delimiter, [node, node2], "**", TextType.BOLD)
 
+    def test_link_delimiter(self):
+        node = TextNode("This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)", TextType.TEXT)     
+        new_nodes = split_nodes_link([node])
+        self.assertListEqual(new_nodes, [TextNode("This is text with a link ", TextType.TEXT),TextNode("to boot dev", TextType.LINK, "https://www.boot.dev"),TextNode(" and ", TextType.TEXT),TextNode("to youtube", TextType.LINK, "https://www.youtube.com/@bootdotdev"),])
+
 
 if __name__ == "__main__":
     unittest.main()
+
