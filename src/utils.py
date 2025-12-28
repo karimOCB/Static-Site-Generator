@@ -20,6 +20,17 @@ def text_node_to_html_node(text_node):
         case _:
             raise Exception("Not a valid type")
         
+def text_to_textnodes(text):
+    nodes = [TextNode(text, TextType.TEXT)]
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_link(nodes)
+    return nodes
+    
+
+        
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     new_nodes = []
     for old_node in old_nodes:
@@ -45,6 +56,9 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
 def split_nodes_link(old_nodes):
     new_nodes = []
     for old_node in old_nodes:
+        if old_node.text_type != TextType.TEXT:
+            new_nodes.append(old_node)
+            continue
         links_tuples = extract_markdown_links(old_node.text); # ("to boot dev", "https://www.boot.dev")
         if not links_tuples:
             new_nodes.append(old_node)
@@ -67,6 +81,9 @@ def split_nodes_link(old_nodes):
 def split_nodes_image(old_nodes):
     new_nodes = []
     for old_node in old_nodes:
+        if old_node.text_type != TextType.TEXT:
+            new_nodes.append(old_node)
+            continue
         images_tuples = extract_markdown_images(old_node.text);
         if not images_tuples:
             new_nodes.append(old_node)
@@ -88,7 +105,7 @@ def split_nodes_image(old_nodes):
 
 
 def extract_markdown_images(text):
-    return re.findall(r"\[(.*?)\]\((.*?)\)", text)
+    return re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
 
 def extract_markdown_links(text):
-    return re.findall(r"(?<!!)\[(.*?)\]\((.*?)\)", text)
+    return re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)

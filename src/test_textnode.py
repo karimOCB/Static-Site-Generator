@@ -1,7 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType
-from utils import text_node_to_html_node, split_nodes_delimiter, split_nodes_link, split_nodes_image
+from utils import text_node_to_html_node, split_nodes_delimiter, split_nodes_link, split_nodes_image, text_to_textnodes
 
 
 class TestTextNode(unittest.TestCase):
@@ -96,6 +96,22 @@ class TestTextNode(unittest.TestCase):
         node = TextNode("This is some text with an ![first image](https://example.com/first.png) and another ![second image](https://example.com/second.png) in it.", TextType.TEXT)     
         new_nodes = split_nodes_image([node])
         self.assertListEqual(new_nodes, [TextNode("This is some text with an ", TextType.TEXT),TextNode("first image", TextType.IMAGE, "https://example.com/first.png"),TextNode(" and another ", TextType.TEXT),TextNode("second image", TextType.IMAGE, "https://example.com/second.png"),TextNode(" in it.", TextType.TEXT),])
+
+    def test_text_to_textnodes(self):
+        text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        nodes = text_to_textnodes(text)
+        self.assertListEqual(nodes, [
+                                        TextNode("This is ", TextType.TEXT),
+                                        TextNode("text", TextType.BOLD),
+                                        TextNode(" with an ", TextType.TEXT),
+                                        TextNode("italic", TextType.ITALIC),
+                                        TextNode(" word and a ", TextType.TEXT),
+                                        TextNode("code block", TextType.CODE),
+                                        TextNode(" and an ", TextType.TEXT),
+                                        TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+                                        TextNode(" and a ", TextType.TEXT),
+                                        TextNode("link", TextType.LINK, "https://boot.dev"),
+                                    ])
 
 
 if __name__ == "__main__":
