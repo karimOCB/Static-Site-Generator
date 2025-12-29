@@ -3,6 +3,12 @@ import re
 from textnode import (TextType, TextNode)
 from htmlnode import (LeafNode)
 
+def markdown_to_blocks(markdown):
+    blocks = markdown.split("\n\n")
+    blocks = [block.strip() for block in blocks]
+    if "" in blocks: blocks.remove("")
+    return blocks
+
 def text_node_to_html_node(text_node):     
     match text_node.text_type:
         case TextType.TEXT:
@@ -28,7 +34,6 @@ def text_to_textnodes(text):
     nodes = split_nodes_image(nodes)
     nodes = split_nodes_link(nodes)
     return nodes
-    
 
         
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
