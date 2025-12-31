@@ -38,12 +38,12 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
             continue
 
         parts = old_node.text.split(delimiter)
-
         if len(parts) % 2 == 0:
             raise Exception("Invalid markdown syntax")
-        
         parts_nodes = []
         for i in range(0, len(parts)):
+            if parts[i] == "":
+                    continue
             if i % 2 != 0:
                 parts_nodes.append(TextNode(parts[i], text_type))
             else:
@@ -58,23 +58,23 @@ def split_nodes_link(old_nodes):
         if old_node.text_type != TextType.TEXT:
             new_nodes.append(old_node)
             continue
-        links_tuples = extract_markdown_links(old_node.text); # ("to boot dev", "https://www.boot.dev")
+        text_to_process = old_node.text
+        links_tuples = extract_markdown_links(text_to_process); # ("to boot dev", "https://www.boot.dev")
         if not links_tuples:
             new_nodes.append(old_node)
-        else:
-            text_to_process = old_node.text
-            for link_tuple in links_tuples:
-                link_text, link_url = link_tuple
-                f_md_link = f"[{link_text}]({link_url})"
-                sections = text_to_process.split(f_md_link, 1)
-                before = sections[0]
-                after = sections[1] if len(sections) > 1 else ""
-                if before != "":
-                    new_nodes.append(TextNode(before, TextType.TEXT))
-                new_nodes.append(TextNode(link_text, TextType.LINK, link_url))
-                text_to_process = after
-            if text_to_process != "":
-                new_nodes.append(TextNode(text_to_process, TextType.TEXT))
+            continue
+        for link_tuple in links_tuples:
+            link_text, link_url = link_tuple
+            f_md_link = f"[{link_text}]({link_url})"
+            sections = text_to_process.split(f_md_link, 1)
+            before = sections[0]
+            after = sections[1] if len(sections) > 1 else ""
+            if before != "":
+                new_nodes.append(TextNode(before, TextType.TEXT))
+            new_nodes.append(TextNode(link_text, TextType.LINK, link_url))
+            text_to_process = after
+        if text_to_process != "":
+            new_nodes.append(TextNode(text_to_process, TextType.TEXT))
     return new_nodes
 
 def split_nodes_image(old_nodes):

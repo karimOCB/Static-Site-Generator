@@ -122,7 +122,18 @@ the **same** even with inline stuff
             "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
         )
 
-    def test_otherblocks(self):
+    def test_heading_and_inline(self):
+        md = """
+# Heading **one**
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><h1>Heading <b>one</b></h1></div>",
+        )
+
+    def test_a_lot_of_blocks(self):
         md = """
 # Heading **one**
 
@@ -151,3 +162,5 @@ tag here
 
 if __name__ == "__main__":
     unittest.main()
+
+

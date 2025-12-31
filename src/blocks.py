@@ -12,24 +12,42 @@ class BlockType(Enum):
     UNORDERED_LIST = "unordered_list"
     ORDERED_LIST = "ordered_list"
 
+def markdown_to_blocks(markdown):
+    blocks = markdown.split("\n\n")
+    filtered_blocks = []
+    for block in blocks:
+        if block == "":
+            continue
+        block = block.strip()
+        filtered_blocks.append(block)
+    return blocks
+
 def block_to_block_type(md_block):
-    heading_pattern = r'^#{1,6}\s+(.+)$'
     lines = md_block.split("\n")
-    quote_pattern = r'^(>.*(\n|$))+$'
-    ul_pattern = r'^(- .+(\n|$))+$'
-    ol_pattern = r'^\d+\.\s+.+$'
-    if re.match(heading_pattern, md_block):
+    lines = [line.strip() for line in lines if line.strip() != ""]
+    ol_pattern = re.compile(r'^\d+\.\s+(.+)$')
+    if re.match(r'^#{1,6}\s+(.+)$', md_block):
         return BlockType.HEADING
     elif lines[0].strip() == "```" and lines[-1].strip() == "```":
         return BlockType.CODE
-    elif re.match(quote_pattern, md_block):
+    elif re.match(r'^(>.*(\n|$))+$', md_block):
         return BlockType.QUOTE
-    elif re.match(ul_pattern, md_block):
+    elif re.match(r'^(- .+(\n|$))+$', md_block):
         return BlockType.UNORDERED_LIST
-    elif re.match(ol_pattern, md_block):
+    elif all(ol_pattern.match(line) for line in lines):
         return BlockType.ORDERED_LIST
     else:
         return BlockType.PARAGRAPH
+
+def markdown_to_html_node(markdown):
+    blocks = markdown_to_blocks(markdown)
+    html_nodes = []
+    for block in blocks:
+        block_type = block_to_block_type(block)
+        html_node = block_to_html_node(block, block_type)
+        html_nodes.append(html_node)
+    return ParentNode("div", html_nodes)
+
 
 def block_to_html_node(block, block_type):
     match block_type:
@@ -53,7 +71,8 @@ def block_to_html_node(block, block_type):
         case BlockType.QUOTE:
             lines = block.split("\n")
             fmt_lines = [line.removeprefix("> ") for line in lines]
-            text = "\n".join(fmt_lines)
+            stripped_lines = [fmt_line.strip() for fmt_line in fmt_lines if fmt_line.strip() != ""]
+            text = " ".join(stripped_lines)
             text_nodes = text_to_textnodes(text)
             html_nodes = [text_node_to_html_node(text_node) for text_node in text_nodes]
             return ParentNode("blockquote", html_nodes)
@@ -71,7 +90,7 @@ def block_to_html_node(block, block_type):
             lines = block.split("\n")
             li_nodes = []
             for i, line in enumerate(lines):
-                text = line.removeprefix(f"{i}. ")
+                text = line.removeprefix(f"{i+1}. ")
                 text = text.strip(" ")
                 text_nodes = text_to_textnodes(text)
                 html_nodes = [text_node_to_html_node(text_node) for text_node in text_nodes]
@@ -87,17 +106,4 @@ def block_to_html_node(block, block_type):
         case _:
             raise Exception("Not a valid type")
 
-def markdown_to_html_node(markdown):
-    blocks = markdown_to_blocks(markdown)
-    html_nodes = []
-    for block in blocks:
-        block_type = block_to_block_type(block)
-        html_node = block_to_html_node(block, block_type)
-        html_nodes.append(html_node)
-    return ParentNode("div", html_nodes)
 
-def markdown_to_blocks(markdown):
-    blocks = markdown.split("\n\n")
-    blocks = [block.strip() for block in blocks]
-    if "" in blocks: blocks.remove("")
-    return blocks
