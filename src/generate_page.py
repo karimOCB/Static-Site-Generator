@@ -14,7 +14,7 @@ def extract_title(md):
 
     return title[i:].lstrip() 
 
-def generate_pages_recursive(from_path, template_path, dest_path):
+def generate_pages_recursive(from_path, template_path, dest_path, base_path):
     print(f"Generating pages from {from_path} to {dest_path} using {template_path}")
     for path in os.listdir(from_path):
         new_from_path = os.path.join(from_path, path)
@@ -24,13 +24,13 @@ def generate_pages_recursive(from_path, template_path, dest_path):
             print(f"Generating folder from {new_from_path} from {from_path} to {dest_path}")
             if not os.path.exists(new_dest_path):
                 os.mkdir(new_dest_path)
-            generate_pages_recursive(new_from_path, template_path, new_dest_path)
+            generate_pages_recursive(new_from_path, template_path, new_dest_path, base_path)
         elif os.path.isfile(new_from_path) and  extension == ".md":
             print(f"Generating file from {new_from_path} to {new_dest_path} using {template_path}")
             new_dest_file = os.path.join(dest_path, (root + ".html"))
-            generate_page(os.path.join(new_from_path), template_path, new_dest_file)
+            generate_page(os.path.join(new_from_path), template_path, new_dest_file, base_path)
         
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, base_path):
     with open(from_path, 'r') as f:
         md = f.read()
     with open(template_path, 'r') as f:
@@ -40,6 +40,8 @@ def generate_page(from_path, template_path, dest_path):
     title = extract_title(md)
     template = template.replace("{{ Title }}", title)
     template = template.replace("{{ Content }}", html_string)
-    
+    template = template.replace('href="/', f'href="{base_path}')
+    template = template.replace('src="/', f'src="{base_path}')
+
     with open(dest_path, 'w') as f:
         f.write(template)

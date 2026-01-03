@@ -1,25 +1,24 @@
-import os, shutil
+import os, shutil, sys
 from generate_page import generate_pages_recursive
 
 current_dir = os.path.dirname(__file__) #.../src
 project_root = os.path.dirname(current_dir) # static_site_generator
-public_dir = os.path.join(project_root, 'public')
+docs_dir = os.path.join(project_root, 'docs')
 static_dir = os.path.join(project_root, 'static')
+base_path = sys.argv[1] if len(sys.argv) > 0 else "/"
 
 def main():
     if not os.path.exists(static_dir):
         raise FileNotFoundError(f"Static directory not found: {static_dir}")
 
-    if os.path.exists(public_dir):
-        shutil.rmtree(public_dir)
+    if os.path.exists(docs_dir):
+        shutil.rmtree(docs_dir)
    
-    os.mkdir(public_dir)
+    os.mkdir(docs_dir)
 
-    check_files(static_dir, public_dir)
+    check_files(static_dir, docs_dir)
 
-    generate_pages_recursive(os.path.join(project_root, 'content'), os.path.join(project_root, 'template.html'), os.path.join(public_dir))
-
-    
+    generate_pages_recursive(os.path.join(project_root, 'content'), os.path.join(project_root, 'template.html'), os.path.join(docs_dir), base_path)
 
 
 def check_files(src, dest):
