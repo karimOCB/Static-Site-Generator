@@ -20,7 +20,7 @@ def markdown_to_blocks(markdown):
             continue
         block = block.strip()
         filtered_blocks.append(block)
-    return blocks
+    return filtered_blocks
 
 def block_to_block_type(md_block):
     lines = md_block.split("\n")

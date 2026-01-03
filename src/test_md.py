@@ -3,6 +3,7 @@ import unittest
 from textnode import TextNode, TextType
 from utils import split_nodes_delimiter, split_nodes_link, split_nodes_image, text_to_textnodes
 from blocks import markdown_to_blocks, block_to_block_type, BlockType, markdown_to_html_node
+from generate_page import extract_title
 
 class TestMd(unittest.TestCase):
     def test_delimiter_one_node(self):
@@ -159,6 +160,16 @@ tag here
             "<div><h1>Heading <b>one</b></h1><p>This is <b>bolded</b> paragraph text in a p tag here</p><blockquote>This is a <b>quote</b> over <i>two</i> lines</blockquote><ul><li>first <b>item</b></li><li>second <i>item</i></li><li>third <code>code</code></li></ul><ol><li>first <b>item</b></li><li>second <i>item</i></li><li>third <code>code</code></li></ol></div>",
         )
 
+    def test_extract_title(self):
+        md = """
+# Hello
+
+This is **bolded** paragraph
+text in a p
+tag here
+"""
+        title = extract_title(md)
+        self.assertEqual(title, "Hello")
 
 if __name__ == "__main__":
     unittest.main()
